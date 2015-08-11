@@ -19,6 +19,7 @@ public class StartServer extends Activity implements View.OnClickListener
 {
     Server server;
     EditText etDno,etType,etData;
+    private final static String TAG = "StartServer";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -49,9 +50,15 @@ public class StartServer extends Activity implements View.OnClickListener
     public void onClick(View v)
     {
         int dno = Integer.parseInt(etDno.getText().toString());
-        DatagramPacket pkt = server.buildPacket(dno ,
-                etType.getText().toString()+" "+etData.getText().toString());
-        Log.d("send button pkt = ",pkt.toString());
-        server.sendToClient(dno,pkt);
+        if(dno==-1)
+        {
+            server.sendToAll(etType.getText().toString()+" "+etData.getText().toString());
+        }
+        else
+        {
+            DatagramPacket pkt = server.buildPacket(dno ,
+                    etType.getText().toString()+" "+etData.getText().toString());
+            server.sendToClient(dno,pkt);
+        }
     }
 }

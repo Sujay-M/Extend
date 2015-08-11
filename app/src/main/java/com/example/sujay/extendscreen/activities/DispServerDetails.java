@@ -31,8 +31,11 @@ import java.util.Enumeration;
 public class DispServerDetails extends Activity
 {
     Server s;
+    private final static String TAG = "DispServerDetails";
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.disp_server_details);
         ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -97,7 +100,7 @@ public class DispServerDetails extends Activity
         try {
             ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
         } catch (UnknownHostException ex) {
-            Log.e("WIFIIP", "Unable to get host address.");
+            Log.e(TAG, "Unable to get host address.");
             ipAddressString = null;
         }
         return ipAddressString;

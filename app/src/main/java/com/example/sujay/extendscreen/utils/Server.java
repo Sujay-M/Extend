@@ -167,5 +167,14 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
         pkt = new DatagramPacket(buf,buf.length,temp.clientAddress,temp.port);
         return pkt;
     }
+    public void sendToAll(String msg)
+    {
+        for (int i = 0;i<clients.size();i++)
+        {
+            ClientModel temp = clients.get(i);
+            DatagramPacket pkt = buildPacket(i,msg);
+            sendToClient(i,pkt);
+        }
+    }
 
 }

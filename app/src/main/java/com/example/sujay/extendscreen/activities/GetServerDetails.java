@@ -18,6 +18,7 @@ import java.net.UnknownHostException;
 public class GetServerDetails extends Activity
 {
     EditText etIP,etPort;
+    private final static String TAG = "GetServerDetails";
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {

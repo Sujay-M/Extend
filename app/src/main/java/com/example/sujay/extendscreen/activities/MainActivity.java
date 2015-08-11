@@ -4,22 +4,30 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.example.sujay.extendscreen.R;
 
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener
+{
+    private final static String TAG = "MainActivity";
 
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViewById(R.id.bClient).setOnClickListener(this);
         findViewById(R.id.bServer).setOnClickListener(this);
-
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        ((TextView)findViewById(R.id.tvHeight)).setText(""+metrics.heightPixels);
+        ((TextView)findViewById(R.id.tvWidth)).setText(""+metrics.widthPixels);
     }
 
 
@@ -55,13 +63,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.bServer:
                 i = new Intent(getBaseContext(),StartServer.class);
                 i.putExtra("IS_MASTER",false);
-                Log.d("server", "start");
+                Log.d(TAG, "server start");
                 startActivity(i);
                 break;
             case R.id.bClient:
                 i = new Intent(getBaseContext(),StartClient.class);
                 i.putExtra("IS_MASTER",true);
-                Log.d("client", "start");
+                Log.d(TAG, "client start");
                 startActivity(i);
                 break;
         }
