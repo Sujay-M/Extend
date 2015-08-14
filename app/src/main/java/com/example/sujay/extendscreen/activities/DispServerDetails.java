@@ -2,6 +2,7 @@ package com.example.sujay.extendscreen.activities;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -28,8 +29,7 @@ import java.util.Enumeration;
 /**
  * Created by sujay on 9/8/15.
  */
-public class DispServerDetails extends Activity
-{
+public class DispServerDetails extends Activity implements View.OnClickListener {
     Server s;
     private final static String TAG = "DispServerDetails";
     @Override
@@ -74,17 +74,13 @@ public class DispServerDetails extends Activity
                 e.printStackTrace();
             }
         }
+
+
         ((TextView)findViewById(R.id.tvServerIP)).setText(ip);
         ((TextView)findViewById(R.id.tvServerPort)).setText(""+9999);
         s = Server.getSingleton();
         s.startServer();
-        findViewById(R.id.bNext).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-                finish();
-            }
-        });
+        findViewById(R.id.bNext).setOnClickListener(this);
 
     }
     protected String getWifiIpAddress(WifiInfo info)
@@ -155,5 +151,12 @@ public class DispServerDetails extends Activity
             macBytes[i] = (byte)Integer.parseInt(macParts[i],16);
         }
         return macBytes;
+    }
+
+    @Override
+    public void onClick(View v)
+    {
+        Intent i = new Intent(this,StartServer.class);
+        startActivity(i);
     }
 }

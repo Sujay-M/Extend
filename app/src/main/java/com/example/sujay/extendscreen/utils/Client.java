@@ -1,5 +1,6 @@
 package com.example.sujay.extendscreen.utils;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class Client implements ClientReceiverTask.ClientMessageReceived
     {
         void commandReceived(String type,String data);
     }
+    private static final String TAG = "CLIENT";
     final static int port = 9999;
     InetAddress serverAddress;
     int msgNo,devNo;
@@ -76,7 +78,7 @@ public class Client implements ClientReceiverTask.ClientMessageReceived
                         e.printStackTrace();
                     }
                 }
-                Log.d("ConnectToServer","devNo = "+getDevNo());
+                Log.d(TAG,"devNo = "+getDevNo());
             }
         });
         t.start();
@@ -90,12 +92,12 @@ public class Client implements ClientReceiverTask.ClientMessageReceived
         {
             String msgParts[] = msg.split(" ");
             messageNumber = Integer.parseInt(msgParts[0]);
-            Log.d("client","message received no = "+messageNumber+" current = "+msgNo);
+            Log.d(TAG,"message received no = "+messageNumber+" current = "+msgNo);
             if(messageNumber==(msgNo+1) || messageNumber==msgNo)
             {
 
                 msgNo = messageNumber;
-                Log.d("client","sending message no :"+msgNo);
+                Log.d(TAG,"sending message no :"+msgNo);
                 new Thread(new Runnable() {
                     @Override
                     public void run()
@@ -140,5 +142,13 @@ public class Client implements ClientReceiverTask.ClientMessageReceived
         receiverSocket = null;
         if(receiver!=null && !receiver.isCancelled())
             receiver.cancel(true);
+    }
+    public void caliberateTime()
+    {
+        long timeSent = SystemClock.elapsedRealtime();
+        byte buf[];
+        String s = new String(-1+" "+0+" "+"ACK "+timeSent);
+        buf = s.getBytes();
+        DatagramPacket pkt = new DatagramPacket(buf, buf.length, serverAddress, port);
     }
 }

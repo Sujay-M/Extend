@@ -9,6 +9,7 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
@@ -40,6 +41,7 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     private DeviceModel dev;
     float[] values = new float[8];
     private boolean mediaPrepared = false;
+    private long clockSkew;
 
 
     @Override
@@ -47,35 +49,24 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.client_activity);
-        Intent i = new Intent(this, GetServerDetails.class);
-        startActivityForResult(i, 1);
-
+        init();
+        serverIp = (InetAddress) getIntent().getExtras().get("ServerIP");
+        requestServer();
     }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == 1)
-        {
-            if(resultCode == RESULT_OK)
-            {
-                init();
-                serverIp = (InetAddress) data.getExtras().get("ServerIP");
-                requestServer();
-            }
-            if (resultCode == RESULT_CANCELED)
-            {
-                //Write your code if there's no result
-            }
-        }
-    }
 
     @Override
     public void commandReceived(String type, String data)
     {
         tvMessageReceived.setText("TYPE: "+type+"  DATA:"+data);
         String dataParts[] = data.split(" ");
+        if(dataParts[0].equals("DEVNO"))
+        {
+            clockSkew = Long.parseLong(dataParts[1]);
+        }
         if(type.equals("COMMAND"))
         {
+            long serverCurrent,current,skewed;
             switch(dataParts[0])
             {
                 case "WHITE":
@@ -85,19 +76,45 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                     mainView.setBackgroundColor(Color.RED);
                     break;
                 case "PLAY":
+                    serverCurrent = Long.parseLong(dataParts[1]);
                     Log.d(TAG,"play");
                     if(mediaPrepared)
+                    {
+                        current = SystemClock.elapsedRealtime();
+                        skewed = serverCurrent+clockSkew;
+                        try {
+                            Thread.sleep(current-skewed+500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         mMediaPlayer.start();
+                    }
                     break;
                 case "PAUSE":
+                    serverCurrent = Long.parseLong(dataParts[1]);
                     if(mediaPrepared)
+                    {
+
+                        current = SystemClock.elapsedRealtime();
+                        current = SystemClock.elapsedRealtime();
+                        skewed = serverCurrent+clockSkew;
+                        try {
+                            Thread.sleep(current-skewed+500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();}
                         mMediaPlayer.pause();
+                    }
                     break;
                 case "STOP":
+                    serverCurrent = Long.parseLong(dataParts[1]);
                     if(mediaPrepared)
+                    {
+                        current = SystemClock.elapsedRealtime();
                         mMediaPlayer.stop();
+                    }
                     break;
                 case "SEEK":
+                    serverCurrent = Long.parseLong(dataParts[1]);
 //                    if(mediaPrepared)
 
                     break;

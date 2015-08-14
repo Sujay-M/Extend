@@ -1,5 +1,6 @@
 package com.example.sujay.extendscreen.utils;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.sujay.extendscreen.models.ClientModel;
@@ -86,7 +87,7 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
         String message = new String(msg.getData(), 0, msg.getLength());
         String msgParts[] = message.split(" ");
         Log.d("server","message received"+addressHashMap.containsKey(clientAddr));
-        if(msgParts.length==3)
+        if(msgParts.length==3||msgParts.length==4)
         {
             if(acceptClients && msgParts[0].equals("-1") && msgParts[1].equals("0") && msgParts[2].equals("ACK"))
             {
@@ -105,6 +106,11 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
                 Log.d("ACK","message no = "+messageNo);
                 temp.setMsgNo(messageNo+1);
 
+            }
+            else if(msgParts[2].equals("CALIB"))
+            {
+                long current = SystemClock.elapsedRealtime();
+                long clockSkew = Long.parseLong(msgParts[3]) - current;
             }
         }
     }
@@ -171,7 +177,6 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
     {
         for (int i = 0;i<clients.size();i++)
         {
-            ClientModel temp = clients.get(i);
             DatagramPacket pkt = buildPacket(i,msg);
             sendToClient(i,pkt);
         }

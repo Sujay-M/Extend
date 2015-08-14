@@ -61,13 +61,13 @@ public class MainActivity extends Activity implements View.OnClickListener
         switch(v.getId())
         {
             case R.id.bServer:
-                i = new Intent(getBaseContext(),StartServer.class);
+                i = new Intent(getBaseContext(),DispServerDetails.class);
                 i.putExtra("IS_MASTER",false);
                 Log.d(TAG, "server start");
                 startActivity(i);
                 break;
             case R.id.bClient:
-                i = new Intent(getBaseContext(),StartClient.class);
+                i = new Intent(getBaseContext(),GetServerDetails.class);
                 i.putExtra("IS_MASTER",true);
                 Log.d(TAG, "client start");
                 startActivity(i);

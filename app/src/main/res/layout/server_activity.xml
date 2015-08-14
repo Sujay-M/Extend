@@ -31,5 +31,58 @@
         android:layout_height="wrap_content"
         android:text="SEND"
         android:id="@+id/bSend"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CALIBERATE"
+        android:id="@+id/bCaliberate"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sType"
+            android:layout_weight="0.5"
+            android:spinnerMode="dialog">
+        </Spinner>
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sFile"
+            android:layout_weight="0.5"
+            android:spinnerMode="dialog">
+        </Spinner>
+    </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bPlay"
+        android:layout_gravity="center"
+        android:text="PLAY"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:layout_weight="0.1"
+            android:id="@+id/tvInitial"/>
+        <SeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/sbSeek"
+            android:indeterminate="false"
+            android:layout_weight="0.8"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:text="--:--"
+            android:id="@+id/tvFinal"/>
+        </LinearLayout>
 
 </LinearLayout>

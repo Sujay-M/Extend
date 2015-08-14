@@ -13,6 +13,7 @@ public class ClientModel
     private int msgNo;
     public final int devNo;
     private int tryNo;
+    public long clockSkew;
     public ClientModel(InetAddress clientAddress,int port,int devNo)
     {
         this.clientAddress = clientAddress;
