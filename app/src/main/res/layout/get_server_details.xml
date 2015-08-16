@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SERVER IP ADDRESS"/>
+        android:text="SERVER IP ADDRESS"
+        android:layout_marginBottom="60dp"
+        android:layout_above="@+id/etServerIP"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/abc_text_size_headline_material"/>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/etServerIP"/>
+        android:id="@+id/etServerIP"
+        android:layout_marginBottom="92dp"
+        android:layout_above="@+id/bDone"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="DONE"
-        android:id="@+id/bDone"/>
+        android:id="@+id/bDone"
+        android:layout_marginBottom="163dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
-</LinearLayout>
+</RelativeLayout>

@@ -35,7 +35,7 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
     Spinner sType,sFiles;
     List<String> type;
     List<String> files;
-    String selectedFile;
+    String selectedFile,selectedFolder;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -121,8 +121,9 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
         {
             case R.id.sType:
 
-                String folder = "/Extend/"+parent.getItemAtPosition(position).toString();
-                String path = Environment.getExternalStorageDirectory().toString()+folder;
+                selectedFolder = "/Extend/"+parent.getItemAtPosition(position).toString();
+
+                String path = Environment.getExternalStorageDirectory().toString()+selectedFolder;
                 Log.d(TAG, "Path: " + path);
                 files.clear();
                 File f = new File(path);
@@ -136,10 +137,11 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 ArrayAdapter<String> fileAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,files);
                 sFiles.setAdapter(fileAdapter);
                 sFiles.setOnItemSelectedListener(this);
+
                 break;
             case R.id.sFile:
                 selectedFile = parent.getItemAtPosition(position).toString();
-                server.sendToAll("FILE "+selectedFile);
+                server.sendToAll("DATA FILE "+selectedFolder+"/"+selectedFile);
                 break;
         }
     }

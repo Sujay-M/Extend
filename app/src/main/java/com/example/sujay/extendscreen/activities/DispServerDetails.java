@@ -77,7 +77,6 @@ public class DispServerDetails extends Activity implements View.OnClickListener 
 
 
         ((TextView)findViewById(R.id.tvServerIP)).setText(ip);
-        ((TextView)findViewById(R.id.tvServerPort)).setText(""+9999);
         s = Server.getSingleton();
         s.startServer();
         findViewById(R.id.bNext).setOnClickListener(this);

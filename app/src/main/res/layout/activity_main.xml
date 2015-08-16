@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -10,27 +10,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/bServer"
-        android:text="SERVER"/>
+        android:text="SERVER"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="159dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/bClient"
-        android:text="CLIENT"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Height"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tvHeight"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Width"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tvWidth"/>
+        android:text="CLIENT"
+        android:layout_gravity="center_horizontal"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
-</LinearLayout>
+</RelativeLayout>

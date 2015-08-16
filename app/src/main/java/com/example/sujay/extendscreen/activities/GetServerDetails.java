@@ -3,6 +3,7 @@ package com.example.sujay.extendscreen.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.NetworkOnMainThreadException;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +35,11 @@ public class GetServerDetails extends Activity implements View.OnClickListener
     {
         try
         {
+            if(etIP.getText().toString().equals(""))
+            {
+                Toast.makeText(this,"Please Input the correct IP",Toast.LENGTH_LONG).show();
+                return;
+            }
             final Intent i = new Intent(this,StartClient.class);
             InetAddress sIP = InetAddress.getByName(etIP.getText().toString());
             i.putExtra("ServerIP",sIP);
@@ -41,7 +47,12 @@ public class GetServerDetails extends Activity implements View.OnClickListener
         } catch (UnknownHostException e)
         {
             e.printStackTrace();
-            Toast.makeText(this,"Please Input the correct IP",Toast.LENGTH_LONG);
+            Toast.makeText(this,"Please Input the correct IP",Toast.LENGTH_LONG).show();
+        }
+        catch (NetworkOnMainThreadException e)
+        {
+            e.printStackTrace();
+            Toast.makeText(this,"Please Input the correct IP",Toast.LENGTH_LONG).show();
         }
     }
 }

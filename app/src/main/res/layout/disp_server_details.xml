@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ServerIP"/>
+        android:text="ServerIP"
+        android:layout_above="@+id/bNext"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="126dp"
+        android:id="@+id/textView"
+        android:textStyle="bold"
+        android:textSize="@dimen/abc_text_size_subhead_material"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/tvServerIP"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Server Port"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tvServerPort"/>
+        android:id="@+id/tvServerIP"
+        android:layout_marginTop="38dp"
+        android:layout_alignTop="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:text="_._._._"
+        android:textSize="@dimen/abc_text_size_headline_material"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Next"
-        android:id="@+id/bNext"/>
+        android:id="@+id/bNext"
+        android:layout_marginBottom="210dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
-</LinearLayout>
+</RelativeLayout>

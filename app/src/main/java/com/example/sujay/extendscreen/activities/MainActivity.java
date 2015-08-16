@@ -2,14 +2,11 @@ package com.example.sujay.extendscreen.activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.example.sujay.extendscreen.R;
 
@@ -24,10 +21,6 @@ public class MainActivity extends Activity implements View.OnClickListener
         setContentView(R.layout.activity_main);
         findViewById(R.id.bClient).setOnClickListener(this);
         findViewById(R.id.bServer).setOnClickListener(this);
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        ((TextView)findViewById(R.id.tvHeight)).setText(""+metrics.heightPixels);
-        ((TextView)findViewById(R.id.tvWidth)).setText(""+metrics.widthPixels);
     }
 
 

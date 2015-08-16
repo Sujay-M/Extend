@@ -21,6 +21,7 @@ import com.example.sujay.extendscreen.R;
 import com.example.sujay.extendscreen.models.DeviceModel;
 import com.example.sujay.extendscreen.utils.Client;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 
@@ -29,7 +30,7 @@ import java.net.InetAddress;
  */
 public class StartClient extends Activity implements Client.CommandFromServer, TextureView.SurfaceTextureListener {
     private final static String TAG = "StartClient";
-    public static final String FILE_URL = Environment.getExternalStorageDirectory().getPath()+"/video.mp4";
+    public String FILE_URL;
 
     private FrameLayout mainView;
 
@@ -49,7 +50,8 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.client_activity);
-        init();
+        mainView = (FrameLayout)findViewById(R.id.flMainView);
+        tvMessageReceived = (TextView)findViewById(R.id.tvMessageReceived);
         serverIp = (InetAddress) getIntent().getExtras().get("ServerIP");
         requestServer();
     }
@@ -126,22 +128,30 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
         }
         else if(type.equals("DATA"))
         {
-            if(dataParts[0].equals("CALIB"))
+            switch (dataParts[0])
             {
-                switch (dataParts[1])
-                {
-                    case "1":
-                        setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.2f,1.0f,0.2f,1.0f);
-                        break;
-                    case "2":
-                        setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
-                        break;
-                    case "3":
-                        setTextureView(1,0.5f,1.0f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
-                        break;
-                }
-
+                case "CALIB":
+                    switch (dataParts[1])
+                    {
+                        case "1":
+                            setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.2f,1.0f,0.2f,1.0f);
+                            break;
+                        case "2":
+                            setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
+                            break;
+                        case "3":
+                            setTextureView(1,0.5f,1.0f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
+                            break;
+                    }
+                    break;
+                case "FILE":
+                    String fileName = "";
+                    for(int i=1;i<dataParts.length;i++)
+                        fileName+=dataParts[i];
+                    FILE_URL = Environment.getExternalStorageDirectory().toString()+fileName;
+                    init();
             }
+
         }
 
     }
@@ -201,6 +211,7 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
         } catch (IOException e) {
             Log.d(TAG, e.getMessage());
         }
+
     }
 
     @Override
@@ -280,8 +291,6 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
 
     private void init()
     {
-        mainView = (FrameLayout)findViewById(R.id.flMainView);
-        tvMessageReceived = (TextView)findViewById(R.id.tvMessageReceived);
         dev = new DeviceModel();
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
