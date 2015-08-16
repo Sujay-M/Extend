@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.sujay.extendscreen.ImageProcessing.CaliberationActivity;
 import com.example.sujay.extendscreen.R;
 import com.example.sujay.extendscreen.utils.Server;
 
@@ -108,6 +109,9 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 }
                 break;
             case R.id.bCaliberate:
+                bCaliberate.setText("RECALIBERATE");
+                Intent i = new Intent(this, CaliberationActivity.class);
+                startActivityForResult(i,0);
                 break;
         }
 
