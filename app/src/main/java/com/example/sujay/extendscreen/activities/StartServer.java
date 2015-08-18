@@ -28,7 +28,6 @@ import java.util.List;
  */
 public class StartServer extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
     Server server;
-    EditText etDno,etType,etData;
     private final static String TAG = "StartServer";
     private boolean playing = false;
     Button bPlay,bCaliberate;
@@ -41,10 +40,6 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.server_activity);
-        etDno = (EditText)findViewById(R.id.etDno);
-        etType = (EditText)findViewById(R.id.etType);
-        etData = (EditText)findViewById(R.id.etData);
-        findViewById(R.id.bSend).setOnClickListener(this);
         findViewById(R.id.bSynchronize).setOnClickListener(this);
         bPlay = (Button)findViewById(R.id.bPlay);
         bCaliberate = (Button)findViewById(R.id.bCaliberate);
@@ -79,19 +74,6 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
     {
         switch (v.getId())
         {
-            case R.id.bSend:
-                int dno = Integer.parseInt(etDno.getText().toString());
-                if(dno==-1)
-                {
-                    server.sendToAll(etType.getText().toString()+" "+etData.getText().toString());
-                }
-                else
-                {
-                    DatagramPacket pkt = server.buildPacket(dno ,
-                            etType.getText().toString()+" "+etData.getText().toString());
-                    server.sendToClient(dno,pkt);
-                }
-                break;
             case R.id.bPlay:
                 if(playing)
                 {
@@ -109,8 +91,13 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 break;
             case R.id.bCaliberate:
                 bCaliberate.setText("RECALIBERATE");
-                Intent i = new Intent(this, CaliberationActivity.class);
-                startActivityForResult(i,0);
+//                Intent i = new Intent(this, CaliberationActivity.class);
+//                startActivityForResult(i,0);
+                for (int i=0;(i<server.getNoOfClients()&&i<2);i++)
+                {
+                    DatagramPacket pkt = server.buildPacket(i,"DATA CALIB "+i);
+                    server.sendToClient(i,pkt);
+                }
                 break;
             case R.id.bSynchronize:
                 server.sendToAll("COMMAND SYNC");
@@ -147,7 +134,14 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 break;
             case R.id.sFile:
                 selectedFile = parent.getItemAtPosition(position).toString();
+                if(playing)
+                {
+                    server.sendToAll("COMMAND STOP");
+                    bPlay.setText("PLAY");
+                    playing = false;
+                }
                 server.sendToAll("DATA FILE "+selectedFolder+"/"+selectedFile);
+
                 break;
         }
     }

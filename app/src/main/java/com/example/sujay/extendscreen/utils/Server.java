@@ -89,7 +89,7 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
         Log.d("server","message received"+addressHashMap.containsKey(clientAddr));
         if(msgParts.length==3||msgParts.length==4)
         {
-            if(acceptClients && msgParts[0].equals("-1") && msgParts[1].equals("0") && msgParts[2].equals("ACK"))
+            if(acceptClients && !addressHashMap.containsKey(clientAddr) && msgParts[0].equals("-1") && msgParts[1].equals("0") && msgParts[2].equals("ACK"))
             {
                 ClientModel temp = new ClientModel(clientAddr,clientPort,clients.size());
                 clients.add(temp);
@@ -203,6 +203,12 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
             DatagramPacket pkt = buildPacket(i,msg);
             sendToClient(i,pkt);
         }
+    }
+    public int getNoOfClients()
+    {
+        if(clients!=null)
+            return clients.size();
+        return 0;
     }
 
 }

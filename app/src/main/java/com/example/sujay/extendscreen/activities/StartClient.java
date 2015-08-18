@@ -14,6 +14,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +54,7 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.client_activity);
         mainView = (FrameLayout)findViewById(R.id.flMainView);
         tvMessageReceived = (TextView)findViewById(R.id.tvMessageReceived);
@@ -145,13 +147,10 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                 case "CALIB":
                     switch (dataParts[1])
                     {
-                        case "1":
-                            setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.2f,1.0f,0.2f,1.0f);
-                            break;
-                        case "2":
+                        case "0":
                             setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
                             break;
-                        case "3":
+                        case "1":
                             setTextureView(1,0.5f,1.0f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
                             break;
                     }

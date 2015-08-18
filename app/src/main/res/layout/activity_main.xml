@@ -12,8 +12,8 @@
         android:id="@+id/bServer"
         android:text="SERVER"
         android:layout_gravity="center_vertical"
-        android:layout_marginTop="159dp"
-        android:layout_alignParentTop="true"
+        android:layout_marginBottom="75dp"
+        android:layout_above="@+id/bClient"
         android:layout_centerHorizontal="true" />
     <Button
         android:layout_width="wrap_content"
