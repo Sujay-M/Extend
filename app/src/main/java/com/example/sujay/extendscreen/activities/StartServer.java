@@ -45,6 +45,7 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
         etType = (EditText)findViewById(R.id.etType);
         etData = (EditText)findViewById(R.id.etData);
         findViewById(R.id.bSend).setOnClickListener(this);
+        findViewById(R.id.bSynchronize).setOnClickListener(this);
         bPlay = (Button)findViewById(R.id.bPlay);
         bCaliberate = (Button)findViewById(R.id.bCaliberate);
         bPlay.setOnClickListener(this);
@@ -110,6 +111,9 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 bCaliberate.setText("RECALIBERATE");
                 Intent i = new Intent(this, CaliberationActivity.class);
                 startActivityForResult(i,0);
+                break;
+            case R.id.bSynchronize:
+                server.sendToAll("COMMAND SYNC");
                 break;
         }
 

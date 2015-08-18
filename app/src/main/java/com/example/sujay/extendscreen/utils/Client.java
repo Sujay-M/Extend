@@ -1,5 +1,6 @@
 package com.example.sujay.extendscreen.utils;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.IOException;
@@ -38,6 +39,14 @@ public class Client implements ClientReceiverTask.ClientMessageReceived
         String s = new String(devNo+" "+msgNo+" "+"ACK");
         byte buf[];
         buf = s.getBytes();
+        DatagramPacket pkt = new DatagramPacket(buf, buf.length, serverAddress, port);
+        return pkt;
+    }
+    public DatagramPacket buildSyncPacket()
+    {
+        /**construct the sync packet*/
+        byte buf[];
+        buf = new String(devNo+" "+-1+" "+"SYNC "+ SystemClock.elapsedRealtime()).getBytes();
         DatagramPacket pkt = new DatagramPacket(buf, buf.length, serverAddress, port);
         return pkt;
     }

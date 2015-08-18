@@ -1,5 +1,6 @@
 package com.example.sujay.extendscreen.utils;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.sujay.extendscreen.models.ClientModel;
@@ -97,15 +98,38 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
                 DatagramPacket pkt = buildPacket(temp.devNo,temp.devNo+" DEVNO");
                 sendToClient(temp.devNo,pkt);
             }
-            else if(addressHashMap.containsKey(clientAddr) && msgParts[2].equals("ACK"))//check if the inetaddress is in clients
+            else if(addressHashMap.containsKey(clientAddr))//check if the inetaddress is in clients
             {
                 int devNo = Integer.parseInt(msgParts[0]);
                 int messageNo = Integer.parseInt(msgParts[1]);
                 ClientModel temp = clients.get(devNo);
-                Log.d("ACK","message no = "+messageNo);
-                temp.setMsgNo(messageNo+1);
+                if(msgParts[2].equals("ACK"))
+                {
+                    Log.d("ACK","message no = "+messageNo);
+                    temp.setMsgNo(messageNo+1);
+                }
+                if(msgParts[2].equals("SYNC"))
+                {
+                    Log.d("SERVER","SYNC request");
+                    try
+                    {
+                        long clientTime = Long.parseLong(msgParts[3]);
+                        long serverTime = SystemClock.elapsedRealtime();
+                        long skew = clientTime-serverTime;
+                        DatagramPacket sync = buildPacket(devNo,"DATA SYNC "+skew);
+                        Log.d("SERVER","client "+devNo+" Skew found "+skew);
+                        sendToClient(devNo,sync);
+                    }
+                    catch (ArrayIndexOutOfBoundsException e)
+                    {
+
+                    }
+
+                }
+
 
             }
+
 
         }
     }
@@ -170,6 +194,10 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
     }
     public void sendToAll(String msg)
     {
+        if(msg.contains("PLAY")||msg.contains("PAUSE")||msg.contains("SEEK"))
+        {
+                msg = msg+" "+SystemClock.elapsedRealtime();
+        }
         for (int i = 0;i<clients.size();i++)
         {
             DatagramPacket pkt = buildPacket(i,msg);

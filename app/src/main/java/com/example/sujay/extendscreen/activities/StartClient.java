@@ -9,6 +9,7 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
@@ -22,8 +23,8 @@ import com.example.sujay.extendscreen.models.DeviceModel;
 import com.example.sujay.extendscreen.utils.Client;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 
 /**
@@ -44,6 +45,8 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     float[] values = new float[8];
     private boolean mediaPrepared = false;
     Surface surface;
+    long clock_skew=0;
+    int sync_no;
 
 
     @Override
@@ -68,6 +71,7 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
 
         if(type.equals("COMMAND"))
         {
+            long serverTime,clientTime,sleepTime;
             switch(dataParts[0])
             {
                 case "WHITE":
@@ -80,12 +84,28 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                     Log.d(TAG,"play");
                     if(mediaPrepared)
                     {
+                        serverTime = Long.parseLong(dataParts[1])+1000;
+                        clientTime = SystemClock.elapsedRealtime();
+                        sleepTime = (serverTime+clock_skew) - clientTime;
+                        try {
+                            Thread.sleep(sleepTime);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         mMediaPlayer.start();
                     }
                     break;
                 case "PAUSE":
                     if(mediaPrepared)
                     {
+                        serverTime = Long.parseLong(dataParts[1])+1000;
+                        clientTime = SystemClock.elapsedRealtime();
+                        sleepTime = (serverTime+clock_skew) - clientTime;
+                        try {
+                            Thread.sleep(sleepTime);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         mMediaPlayer.pause();
                     }
                     break;
@@ -96,10 +116,24 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                     }
                     break;
                 case "SEEK":
+                    if(mediaPrepared)
+                    {
+                        serverTime = Long.parseLong(dataParts[1])+1000;
+                        clientTime = SystemClock.elapsedRealtime();
+                        sleepTime = (serverTime+clock_skew) - clientTime;
+                        try {
+                            Thread.sleep(sleepTime);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     break;
 
                 case "PREPARE":
                     mMediaPlayer.prepareAsync();
+                    break;
+                case "SYNC":
+                    initiateSynchronization();
                     break;
 
             }
@@ -133,11 +167,50 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                         Log.d(TAG,"File exists");
                         init();
                     }
+                    break;
+                case "SYNC":
+                    if(clock_skew==0)
+                    {
+                        sync_no = 1;
+                        clock_skew = Long.parseLong(dataParts[1]);
+                        Log.d(TAG,"Initial clock skew = "+clock_skew);
+                    }
+                    else
+                    {
+                        clock_skew = (clock_skew*sync_no+Long.parseLong(dataParts[1]))/(sync_no+1);
+                        sync_no++;
+                        Log.d(TAG,"obtained skew = "+dataParts[1]+" current = "+clock_skew);
+                    }
+                    break;
+
             }
 
         }
 
     }
+
+    private void initiateSynchronization()
+    {
+        sync_no = 0;
+         Thread t = new Thread(new Runnable() {
+             @Override
+             public void run()
+             {
+                for (int i=1;i<=10;i++)
+                {
+                    DatagramPacket sync = c.buildSyncPacket();
+                    c.sendData(sync);
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+             }
+         });
+        t.start();
+    }
+
 
     @Override
     protected void onResume()
