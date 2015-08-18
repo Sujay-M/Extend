@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -95,15 +94,14 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
             case R.id.bPlay:
                 if(playing)
                 {
-                    long current = SystemClock.elapsedRealtime();
-                    server.sendToAll("COMMAND PAUSE "+current);
+
+                    server.sendToAll("COMMAND PAUSE");
                     playing = false;
                     bPlay.setText("PLAY");
                 }
                 else
                 {
-                    long current = SystemClock.elapsedRealtime();
-                    server.sendToAll("COMMAND PLAY "+current);
+                    server.sendToAll("COMMAND PLAY");
                     playing = true;
                     bPlay.setText("PAUSE");
                 }

@@ -9,18 +9,19 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.sujay.extendscreen.R;
 import com.example.sujay.extendscreen.models.DeviceModel;
 import com.example.sujay.extendscreen.utils.Client;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,7 +29,7 @@ import java.net.InetAddress;
 /**
  * Created by sujay on 5/8/15.
  */
-public class StartClient extends Activity implements Client.CommandFromServer, TextureView.SurfaceTextureListener {
+public class StartClient extends Activity implements Client.CommandFromServer, TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener {
     private final static String TAG = "StartClient";
     public String FILE_URL;
 
@@ -42,7 +43,7 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     private DeviceModel dev;
     float[] values = new float[8];
     private boolean mediaPrepared = false;
-    private long clockSkew;
+    Surface surface;
 
 
     @Override
@@ -52,6 +53,8 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
         setContentView(R.layout.client_activity);
         mainView = (FrameLayout)findViewById(R.id.flMainView);
         tvMessageReceived = (TextView)findViewById(R.id.tvMessageReceived);
+        mTextureView = (TextureView) findViewById(R.id.textureView);
+        mTextureView.setSurfaceTextureListener(this);
         serverIp = (InetAddress) getIntent().getExtras().get("ServerIP");
         requestServer();
     }
@@ -62,13 +65,9 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     {
         tvMessageReceived.setText("TYPE: "+type+"  DATA:"+data);
         String dataParts[] = data.split(" ");
-        if(dataParts[0].equals("DEVNO"))
-        {
-            clockSkew = Long.parseLong(dataParts[1]);
-        }
+
         if(type.equals("COMMAND"))
         {
-            long serverCurrent,current,skewed;
             switch(dataParts[0])
             {
                 case "WHITE":
@@ -78,48 +77,27 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                     mainView.setBackgroundColor(Color.RED);
                     break;
                 case "PLAY":
-                    serverCurrent = Long.parseLong(dataParts[1]);
                     Log.d(TAG,"play");
                     if(mediaPrepared)
                     {
-                        current = SystemClock.elapsedRealtime();
-                        skewed = serverCurrent+clockSkew;
-                        try {
-                            Thread.sleep(current-skewed+500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                         mMediaPlayer.start();
                     }
                     break;
                 case "PAUSE":
-                    serverCurrent = Long.parseLong(dataParts[1]);
                     if(mediaPrepared)
                     {
-
-                        current = SystemClock.elapsedRealtime();
-                        current = SystemClock.elapsedRealtime();
-                        skewed = serverCurrent+clockSkew;
-                        try {
-                            Thread.sleep(current-skewed+500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();}
                         mMediaPlayer.pause();
                     }
                     break;
                 case "STOP":
-                    serverCurrent = Long.parseLong(dataParts[1]);
                     if(mediaPrepared)
                     {
-                        current = SystemClock.elapsedRealtime();
-                        mMediaPlayer.stop();
+                        stopPlayer();
                     }
                     break;
                 case "SEEK":
-                    serverCurrent = Long.parseLong(dataParts[1]);
-//                    if(mediaPrepared)
-
                     break;
+
                 case "PREPARE":
                     mMediaPlayer.prepareAsync();
                     break;
@@ -145,11 +123,16 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                     }
                     break;
                 case "FILE":
-                    String fileName = "";
-                    for(int i=1;i<dataParts.length;i++)
-                        fileName+=dataParts[i];
+                    String fileName = ""+dataParts[1];
+                    for(int i=2;i<dataParts.length;i++)
+                        fileName+=" "+dataParts[i];
                     FILE_URL = Environment.getExternalStorageDirectory().toString()+fileName;
-                    init();
+                    Log.d(TAG,FILE_URL);
+                    if(new File(FILE_URL).exists())
+                    {
+                        Log.d(TAG,"File exists");
+                        init();
+                    }
             }
 
         }
@@ -185,34 +168,12 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height)
     {
-        Surface surface = new Surface(surfaceTexture);
-        try {
-            mMediaPlayer = new MediaPlayer();
-            mMediaPlayer
-                    .setDataSource(FILE_URL);
-            mMediaPlayer.setSurface(surface);
-            mMediaPlayer.setLooping(true);
-            mMediaPlayer.prepareAsync();
-            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener()
-            {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer)
-                {
-                    mediaPrepared = true;
-                    Log.d(TAG," mediaPrepared");
-                }
-            });
-        } catch (IllegalArgumentException e) {
-            Log.d(TAG, e.getMessage());
-        } catch (SecurityException e) {
-            Log.d(TAG, e.getMessage());
-        } catch (IllegalStateException e) {
-            Log.d(TAG, e.getMessage());
-        } catch (IOException e) {
-            Log.d(TAG, e.getMessage());
-        }
+        surface = new Surface(surfaceTexture);
+        initMediaPlayer();
 
     }
+
+
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
@@ -297,13 +258,61 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
         dev.devHeight = metrics.heightPixels;
         dev.devWidth  = metrics.widthPixels;
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-        metaRetriever.setDataSource(FILE_URL);
-        String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
-        String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
-        dev.vidHeight = Integer.parseInt(height);
-        dev.vidWidth = Integer.parseInt(width);
-        mTextureView = (TextureView) findViewById(R.id.textureView);
-        mTextureView.setSurfaceTextureListener(this);
+        try
+        {
+            metaRetriever.setDataSource(FILE_URL);
+            String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            dev.vidHeight = Integer.parseInt(height);
+            dev.vidWidth = Integer.parseInt(width);
+        }catch(IllegalArgumentException e)
+        {
+            Toast.makeText(this,"File cant be opened",Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+
+        try
+        {
+            stopPlayer();
+            initMediaPlayer();
+            mMediaPlayer.setDataSource(FILE_URL);
+            mMediaPlayer.prepareAsync();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        metaRetriever.release();
+        metaRetriever = null;
+    }
+
+    private void stopPlayer()
+    {
+        if(mMediaPlayer!=null)
+        {
+            if(mMediaPlayer.isPlaying())
+                mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+            mediaPrepared = false;
+        }
+    }
+
+    private void initMediaPlayer()
+    {
+        try
+        {
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setSurface(surface);
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.setOnPreparedListener(this);
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, e.getMessage());
+        } catch (SecurityException e) {
+            Log.d(TAG, e.getMessage());
+        } catch (IllegalStateException e) {
+            Log.d(TAG, e.getMessage());
+        }
     }
 
     public void requestServer()
@@ -311,5 +320,11 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
         c = new Client(serverIp,this);
         c.connectToServer();
         c.startReceiving();
+    }
+    @Override
+    public void onPrepared(MediaPlayer mediaPlayer)
+    {
+        mediaPrepared = true;
+        Log.d(TAG," mediaPrepared");
     }
 }

@@ -1,6 +1,5 @@
 package com.example.sujay.extendscreen.utils;
 
-import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.sujay.extendscreen.models.ClientModel;
@@ -107,11 +106,7 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
                 temp.setMsgNo(messageNo+1);
 
             }
-            else if(msgParts[2].equals("CALIB"))
-            {
-                long current = SystemClock.elapsedRealtime();
-                long clockSkew = Long.parseLong(msgParts[3]) - current;
-            }
+
         }
     }
     public  void sendToClient(int devNo,final DatagramPacket sendPkt)

@@ -1,6 +1,5 @@
 package com.example.sujay.extendscreen.utils;
 
-import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.IOException;
@@ -143,12 +142,5 @@ public class Client implements ClientReceiverTask.ClientMessageReceived
         if(receiver!=null && !receiver.isCancelled())
             receiver.cancel(true);
     }
-    public void caliberateTime()
-    {
-        long timeSent = SystemClock.elapsedRealtime();
-        byte buf[];
-        String s = new String(-1+" "+0+" "+"ACK "+timeSent);
-        buf = s.getBytes();
-        DatagramPacket pkt = new DatagramPacket(buf, buf.length, serverAddress, port);
-    }
+
 }
