@@ -1,20 +1,15 @@
 package com.example.sujay.extendscreen.activities;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
-import com.example.sujay.extendscreen.ImageProcessing.CaliberationActivity;
 import com.example.sujay.extendscreen.R;
 import com.example.sujay.extendscreen.utils.Server;
 
@@ -91,8 +86,6 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 break;
             case R.id.bCaliberate:
                 bCaliberate.setText("RECALIBERATE");
-//                Intent i = new Intent(this, CaliberationActivity.class);
-//                startActivityForResult(i,0);
                 for (int i=0;(i<server.getNoOfClients()&&i<2);i++)
                 {
                     DatagramPacket pkt = server.buildPacket(i,"DATA CALIB "+i);
