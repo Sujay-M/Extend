@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -57,6 +58,8 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
     {
         super.onResume();
         server = Server.getSingleton();
+        server.removeClients();
+        server.sendToAll("COMMAND BLACK");
     }
 
     @Override
@@ -143,5 +146,14 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
     public void onNothingSelected(AdapterView<?> parent)
     {
 
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK))
+        {
+            finish();
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

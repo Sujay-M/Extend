@@ -44,6 +44,7 @@ public class GetServerDetails extends Activity implements View.OnClickListener
             InetAddress sIP = InetAddress.getByName(etIP.getText().toString());
             i.putExtra("ServerIP",sIP);
             startActivity(i);
+            finish();
         } catch (UnknownHostException e)
         {
             e.printStackTrace();

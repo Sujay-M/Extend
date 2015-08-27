@@ -210,5 +210,25 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
             return clients.size();
         return 0;
     }
+    public ClientModel getClient(int num)
+    {
+        if(num<clients.size())
+            return clients.get(num);
+        return null;
+    }
+    public void removeClients()
+    {
+        for(int i= 0,j = 0;i<clients.size();i++)
+        {
+            if(clients.get(j).getRectangle()==null)
+            {
+                DatagramPacket pkt = buildPacket(clients.get(j).devNo,"REMOVED");
+                sendToClient(clients.get(j).devNo,pkt);
+                clients.remove(j);
+            }
+            else
+                j++;
+        }
+    }
 
 }

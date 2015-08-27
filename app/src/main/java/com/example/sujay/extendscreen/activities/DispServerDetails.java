@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.sujay.extendscreen.ImageProcessing.NewLayout;
 import com.example.sujay.extendscreen.R;
 import com.example.sujay.extendscreen.utils.Server;
 
@@ -155,7 +156,8 @@ public class DispServerDetails extends Activity implements View.OnClickListener 
     @Override
     public void onClick(View v)
     {
-        Intent i = new Intent(this,StartServer.class);
+        Intent i = new Intent(this,NewLayout.class);
         startActivity(i);
+        finish();
     }
 }

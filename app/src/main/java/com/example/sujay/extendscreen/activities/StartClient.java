@@ -12,6 +12,7 @@ import android.os.Environment;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.WindowManager;
@@ -81,6 +82,9 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                     break;
                 case "RED":
                     mainView.setBackgroundColor(Color.RED);
+                    break;
+                case "BLACK":
+                    mainView.setBackgroundColor(Color.BLACK);
                     break;
                 case "PLAY":
                     Log.d(TAG,"play");
@@ -398,5 +402,15 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
     {
         mediaPrepared = true;
         Log.d(TAG," mediaPrepared");
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK))
+        {
+            finish();
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
