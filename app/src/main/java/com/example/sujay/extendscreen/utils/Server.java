@@ -31,6 +31,7 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
     {
         clients = new ArrayList<ClientModel>();
         addressHashMap = new HashMap<InetAddress,Integer>();
+        addressHashMap.clear();
         acceptClients = true;
     }
     public static synchronized Server getSingleton()
@@ -98,7 +99,7 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
                 DatagramPacket pkt = buildPacket(temp.devNo,temp.devNo+" DEVNO");
                 sendToClient(temp.devNo,pkt);
             }
-            else if(addressHashMap.containsKey(clientAddr))//check if the inetaddress is in clients
+            else if(addressHashMap.containsKey(clientAddr) && (!msgParts[0].equals("-1")))//check if the inetaddress is in clients
             {
                 int devNo = Integer.parseInt(msgParts[0]);
                 int messageNo = Integer.parseInt(msgParts[1]);
@@ -216,19 +217,6 @@ public class Server implements ServerReceiverTask.ServerMessageReceived
             return clients.get(num);
         return null;
     }
-    public void removeClients()
-    {
-        for(int i= 0,j = 0;i<clients.size();i++)
-        {
-            if(clients.get(j).getRectangle()==null)
-            {
-                DatagramPacket pkt = buildPacket(clients.get(j).devNo,"REMOVED");
-                sendToClient(clients.get(j).devNo,pkt);
-                clients.remove(j);
-            }
-            else
-                j++;
-        }
-    }
+
 
 }

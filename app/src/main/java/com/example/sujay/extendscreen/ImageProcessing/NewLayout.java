@@ -38,6 +38,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -48,6 +49,8 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by sujay on 27/8/15.
@@ -59,6 +62,7 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
     Bitmap ORIGINAL = null;
     Button bNext;
     Mat originalImg = null;
+    Mat mask = null;
     int curDevNo = 0;
     private boolean bitmapAvailable = false;
     boolean photoFlag = true;
@@ -99,7 +103,6 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
         bNext.setOnClickListener(this);
         bNext.setVisibility(View.INVISIBLE);
         server = Server.getSingleton();
-        server.sendToAll("COMMAND WHITE");
     }
 
     @Override
@@ -206,8 +209,11 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
     {
 
         originalImg = new Mat();
+
         Bitmap image = ORIGINAL.copy(Bitmap.Config.ARGB_8888, true);
         Utils.bitmapToMat(image, originalImg);
+        mask = new Mat(originalImg.size(),CvType.CV_8U);
+        mask.setTo(new Scalar(0));
         AsyncTask<Void,Void,Void> task = new AsyncTask<Void,Void,Void>()
         {
             final int SENSITIVITY = 50;
@@ -334,9 +340,9 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
                 }
                 else
                 {
-                    RotatedRect box = server.getClient(curDevNo).getRectangle();
-                    Rect r = box.boundingRect();
+                    Rect r = server.getClient(curDevNo).getRectangle();
                     Core.rectangle(originalImg, r.tl(), r.br(), new Scalar(0, 255, 0), -1);
+                    Core.rectangle(mask, r.tl(), r.br(), new Scalar(255), -1);
                     setImage(originalImg);
                     curDevNo+=1;
                     if(curDevNo<server.getNoOfClients())
@@ -344,16 +350,21 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
                         DatagramPacket pkt = server.buildPacket(curDevNo,"COMMAND RED");
                         server.sendToClient(curDevNo,pkt);
                     }
+                    else
+                        createLayout();
 
                 }
                 bNext.setVisibility(View.INVISIBLE);
                 break;
             case R.id.bNLDone:
+
                 Intent i = new Intent(this,StartServer.class);
                 startActivity(i);
                 finish();
                 break;
             case R.id.bPhoto:
+                curDevNo = 0;
+                server.sendToAll("COMMAND WHITE");
                 dispatchTakePictureIntent();
                 ((Button)findViewById(R.id.bPhoto)).setText("RETAKE");
                 break;
@@ -364,7 +375,7 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
         ClientModel c = server.getClient(curDevNo);
         if(c!=null)
         {
-            c.setRectangle(box);
+            c.setRectangle(box.boundingRect());
         }
         Rect r = box.boundingRect();
         Mat img = originalImg.clone();
@@ -373,6 +384,162 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
         bNext.setVisibility(View.VISIBLE);
     }
 
+    private Rect createLayout()
+    {
+        Log.d(TAG,"create layout called");
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.d(TAG,"thread started");
+                List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+                int i = 30,j,k;
+                do
+                {
+                    contours.clear();
+                    Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(i, i));
+                    Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel);
+                    Imgproc.findContours(mask.clone(),contours,new Mat(),Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
+                    Log.d(TAG,"i = "+i+" no of contours = "+contours.size());
+                    i+=20;
+                }while(contours.size()!=1);
+                MatOfPoint2f approxCurve = new MatOfPoint2f();
+                MatOfPoint2f contour2f = new MatOfPoint2f( contours.get(0).toArray() );
+                double approxDistance = Imgproc.arcLength(contour2f, true)*0.02;
+                Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
+                MatOfPoint points = new MatOfPoint( approxCurve.toArray() );
+                Rect layout = Imgproc.boundingRect(points);
+                int top = layout.y;
+                int left = layout.x;
+                int bottom = top+layout.height;
+                int right = left+layout.width;
+                double data[],lpixel[],tpixel[],ltpixel[];
+                List<Integer[]> set = new ArrayList<>();
+
+                for(i=top;i<=bottom;i++)
+                {
+                    for(j=left;j<=right;j++)
+                    {
+                        data = mask.get(i,j);
+                        lpixel = (j!=0)?mask.get(i,j-1):new double[]{0};
+                        tpixel = (i!=0)?mask.get(i-1,j):new double[]{0};
+                        ltpixel = (i!=0)&&(j!=0)?mask.get(i-1,j-1):new double[]{0};
+                        if(data[0]!=0 && tpixel[0]==0 && lpixel[0]==0)
+                        {
+                            for(k = j+1;k<=right;k++)
+                            {
+                                data = mask.get(i,k);
+                                if(data[0]==0)
+                                    break;
+                            }
+                            set.add(new Integer[]{j,i,k-1,-1});
+                        }
+                        else if(data[0]!=0 && tpixel[0]==0 && ltpixel[0]!=0)
+                        {
+                            List<Integer[]> temp = new ArrayList<Integer[]>();
+                            for(Integer[] rect:set)
+                            {
+                                if(rect[2]==j-1 && rect[3]==-1)
+                                {
+                                    for(k = j;k<=right;k++)
+                                    {
+                                        data = mask.get(i,k);
+                                        if(data[0]==0)
+                                            break;
+                                    }
+                                    if(rect[0]==141 && i==101 && (k-1)==572)
+                                        Log.d("found1","rect = "+rect[0]+" "+rect[1]+" "+rect[2]+" "+rect[3]);
+                                    temp.add(new Integer[]{rect[0],i,k-1,-1});
+                                }
+
+                            }
+                            if(temp.size()!=0)
+                                set.addAll(temp);
+                        }
+                        else if(data[0]!=0 && lpixel[0]==0)
+                        {
+                            List<Integer[]> temp = new ArrayList<Integer[]>();
+                            for(Integer[] rect:set)
+                            {
+                                if(rect[3]==i-1 && j>rect[0] && j<rect[2])
+                                {
+                                    for(k = j;k<=right;k++)
+                                    {
+                                        data = mask.get(i,k);
+                                        if(data[0]==0)
+                                            break;
+                                    }
+                                    if(j==141 && rect[1]==101 && min(k-1,rect[2])==572)
+                                        Log.d("found2","rect = "+rect[0]+" "+rect[1]+" "+rect[2]+" "+rect[3]);
+                                    temp.add(new Integer[]{j,rect[1],min(k-1,rect[2]),-1});
+                                }
+
+                            }
+                            if(temp.size()!=0)
+                                set.addAll(temp);
+                        }
+                        else if(data[0]==0 && lpixel[0]!=0 && tpixel[0]!=0)
+                        {
+                            List<Integer[]> temp = new ArrayList<Integer[]>();
+                            for(Integer[] rect:set)
+                            {
+                                if(rect[3]==-1)
+                                {
+                                    if(rect[0]==141 && rect[1]==101 && j==572)
+                                        Log.d("found3","rect = "+rect[0]+" "+rect[1]+" "+rect[2]+" "+rect[3]);
+                                    temp.add(new Integer[]{rect[0],rect[1],min(j,rect[2]),-1});
+                                }
+                            }
+                            if(temp.size()!=0)
+                                set.addAll(temp);
+                        }
+
+                        data = mask.get(i,j);
+                        if(data[0]==0)
+                        {
+                            for(Integer[] rect:set)
+                            {
+                                if((rect[3]==-1 && i>rect[1] && j>rect[0] && j<rect[2]) || (i==bottom&&rect[3]==-1))
+                                    rect[3] = i;
+                            }
+                        }
+
+                    }
+                }
+                Integer[] selected = {0,0,0,0};
+                int max = 0;
+                for(Integer[] rect:set)
+                {
+                    Log.d("rectangle : ",rect[0]+" "+rect[1]+" "+rect[2]+" "+rect[3]);
+                    int area = (rect[2]-rect[0])*(rect[3]-rect[1]);
+                    if(area>max)
+                    {
+                        max = area;
+                        selected = rect;
+                    }
+                }
+                Log.d(TAG,"selected = "+selected[0]+" "+selected[1]+" "+selected[2]+" "+selected[3]);
+                final Mat newMask = new Mat(mask.size(),CvType.CV_8UC3);
+                newMask.setTo(new Scalar(255,0,0),mask);
+                Core.rectangle(newMask, new Point(selected[0], selected[1]), new Point(selected[2], selected[3]), new Scalar(0, 0, 255), -1);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setImage(newMask);
+                    }
+                });
+            }
+        });
+        executorService.shutdown();
+
+
+        return null;
+    }
+    private int min(int a,int b)
+    {
+        return (a>=b)?b:a;
+    }
 
 
 }

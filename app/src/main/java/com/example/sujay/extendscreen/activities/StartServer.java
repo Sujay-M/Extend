@@ -12,7 +12,11 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import com.example.sujay.extendscreen.R;
+import com.example.sujay.extendscreen.models.ClientModel;
 import com.example.sujay.extendscreen.utils.Server;
+
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 
 import java.io.File;
 import java.net.DatagramPacket;
@@ -58,7 +62,6 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
     {
         super.onResume();
         server = Server.getSingleton();
-        server.removeClients();
         server.sendToAll("COMMAND BLACK");
     }
 
@@ -94,6 +97,7 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                     DatagramPacket pkt = server.buildPacket(i,"DATA CALIB "+i);
                     server.sendToClient(i,pkt);
                 }
+                caliberate();
                 break;
             case R.id.bSynchronize:
                 server.sendToAll("COMMAND SYNC");
@@ -101,6 +105,18 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
         }
 
     }
+
+
+
+    private void caliberate()
+    {
+
+
+    }
+
+
+
+
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id)

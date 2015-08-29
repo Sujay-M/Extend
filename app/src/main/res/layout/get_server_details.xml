@@ -17,7 +17,8 @@
         android:layout_marginBottom="92dp"
         android:layout_above="@+id/bDone"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:text="10.42.0.74"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

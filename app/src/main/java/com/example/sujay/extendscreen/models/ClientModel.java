@@ -1,6 +1,7 @@
 package com.example.sujay.extendscreen.models;
 
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 
 import java.net.DatagramPacket;
@@ -16,7 +17,7 @@ public class ClientModel
     private int msgNo;
     public final int devNo;
     private int tryNo;
-    private RotatedRect rectangle = null;
+    private Rect rectangle = null;
     public ClientModel(InetAddress clientAddress,int port,int devNo)
     {
         this.clientAddress = clientAddress;
@@ -41,11 +42,11 @@ public class ClientModel
     {
         return this.tryNo;
     }
-    public RotatedRect getRectangle()
+    public Rect getRectangle()
     {
         return rectangle;
     }
-    public void setRectangle(RotatedRect r)
+    public void setRectangle(Rect r)
     {
         rectangle = r;
     }
