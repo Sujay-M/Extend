@@ -123,12 +123,12 @@ public class StartServer extends Activity implements View.OnClickListener, Adapt
                 float widthScale = ((float)w/(float)width);
                 if(heightScale>=widthScale)
                 {
-                   newHeight = (int)(h*widthScale);
+                   newHeight = (int)(height*widthScale);
                    newWidth = w;
                 }
                 else
                 {
-                    newWidth = (int)(w*heightScale);
+                    newWidth = (int)(width*heightScale);
                     newHeight = h;
                 }
                 Log.d(TAG,"dimens video = ("+width+","+height+")");
