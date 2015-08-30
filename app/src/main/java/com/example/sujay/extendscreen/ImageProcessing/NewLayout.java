@@ -1,6 +1,7 @@
 package com.example.sujay.extendscreen.ImageProcessing;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -173,36 +174,84 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
     private void setPic()
     {
         findViewById(R.id.tvShow).setVisibility(View.GONE);
-        try
-        {
-            int targetW = mImageView.getWidth();
-            int targetH = mImageView.getHeight();
-            String path = Environment.getExternalStorageDirectory()+"/temp.png";
-            File f = new File(path);
-            InputStream is = new FileInputStream(f);
-            Bitmap bmp = BitmapFactory.decodeStream(is);
+        boolean Done = false;
 
-            int width = bmp.getWidth();
-            int height = bmp.getHeight();
+            try
+            {
+                for(int i = 0;i<10;i++)
+                {
+                    if(mImageView.getHeight()!=0)
+                        break;
+                    else
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    Toast.makeText(this,"waiting for image view",Toast.LENGTH_SHORT).show();
+                }
+                int targetW = mImageView.getWidth();
+                int targetH = mImageView.getHeight();
+                Log.d(TAG,"tarrget.width = "+targetW+"  target.height = "+targetH);
+                String path = Environment.getExternalStorageDirectory()+"/temp.png";
+                File f = new File(path);
+                if(f.exists())
+                {
+                    Log.d(TAG,"File exists");
+                    Toast.makeText(this,"file found",Toast.LENGTH_SHORT).show();
+                    InputStream is = new FileInputStream(f);
+                    Bitmap bmp = BitmapFactory.decodeStream(is);
 
-            float xScale = ((float) targetW) / width;
-            float yScale = ((float) targetH) / height;
-            float scale = (xScale <= yScale) ? xScale : yScale;
+                    int width = bmp.getWidth();
+                    int height = bmp.getHeight();
+                    Log.d(TAG,"bmp.width = "+width+"  bmp.height = "+height);
+                    float xScale = ((float) targetW) / width;
+                    float yScale = ((float) targetH) / height;
+                    float scale = (xScale <= yScale) ? xScale : yScale;
 
-            Matrix matrix = new Matrix();
-            matrix.postScale(scale, scale);
+                    Matrix matrix = new Matrix();
+                    matrix.postScale(scale, scale);
 
-            ORIGINAL = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix, true);
+                    ORIGINAL = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix, true);
 
-            setImage(ORIGINAL);
-            isImageAvailable = true;
-            bitmapAvailable = true;
+                    setImage(ORIGINAL);
+                    isImageAvailable = true;
+                    bitmapAvailable = true;
+                    Done = true;
+                }
+                else
+                {
+                    Log.d(TAG,"image not found");
+                }
 
-        }
-        catch (FileNotFoundException e)
-        {
+            }
+            catch (FileNotFoundException e)
+            {
+                Log.d(TAG,"image not found");
+                Toast.makeText(this,"file not found, exiting",Toast.LENGTH_SHORT).show();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                finish();
+            }
+            catch (IllegalArgumentException e)
+            {
+                Log.d(TAG,"width and heights are 0");
 
-        }
+                Toast.makeText(this,"width and heights are 0",Toast.LENGTH_SHORT).show();
+                finish();
+            }
+            catch(ArithmeticException e)
+            {
+                Log.d(TAG,"Divide by 0");
+
+                Toast.makeText(this,"divide by 0",Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+
 
     }
     private void startProcessing()
@@ -386,6 +435,9 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
 
     private Rect createLayout()
     {
+        final ProgressDialog dialog = new ProgressDialog(NewLayout.this);
+        dialog.setMessage("Processing....");
+        dialog.show();
         Log.d(TAG,"create layout called");
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(new Runnable() {
@@ -507,39 +559,48 @@ public class NewLayout extends Activity implements View.OnTouchListener, View.On
 
                     }
                 }
-                Integer[] selected = {0,0,0,0};
-                int max = 0;
-                for(Integer[] rect:set)
-                {
-                    Log.d("rectangle : ",rect[0]+" "+rect[1]+" "+rect[2]+" "+rect[3]);
-                    int area = (rect[2]-rect[0])*(rect[3]-rect[1]);
-                    if(area>max)
-                    {
-                        max = area;
-                        selected = rect;
-                    }
-                }
-                Log.d(TAG,"selected = "+selected[0]+" "+selected[1]+" "+selected[2]+" "+selected[3]);
-                final Mat newMask = new Mat(mask.size(),CvType.CV_8UC3);
-                newMask.setTo(new Scalar(255,0,0),mask);
-                Core.rectangle(newMask, new Point(selected[0], selected[1]), new Point(selected[2], selected[3]), new Scalar(0, 0, 255), -1);
+                LayoutModel layoutModel = LayoutModel.getSingleton();
+                layoutModel.setLayout(set);
+//                Integer[] selected = {0,0,0,0};
+//                int max = 0;
+//                for(Integer[] rect:set)
+//                {
+//                    Log.d("rectangle : ",rect[0]+" "+rect[1]+" "+rect[2]+" "+rect[3]);
+//                    int area = (rect[2]-rect[0])*(rect[3]-rect[1]);
+//                    if(area>max)
+//                    {
+//                        max = area;
+//                        selected = rect;
+//                    }
+//                }
+//                Log.d(TAG,"selected = "+selected[0]+" "+selected[1]+" "+selected[2]+" "+selected[3]);
+//                final Mat newMask = new Mat(mask.size(),CvType.CV_8UC3);
+//                newMask.setTo(new Scalar(255,0,0),mask);
+//                Core.rectangle(newMask, new Point(selected[0], selected[1]), new Point(selected[2], selected[3]), new Scalar(0, 0, 255), -1);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        setImage(newMask);
+                        if(dialog != null && dialog.isShowing()){
+                            dialog.dismiss();
+                        }
+                        done();
+
                     }
                 });
             }
         });
         executorService.shutdown();
-
-
         return null;
     }
     private int min(int a,int b)
     {
         return (a>=b)?b:a;
     }
-
+    private void done()
+    {
+        Intent i = new Intent(this,StartServer.class);
+        startActivity(i);
+        finish();
+    }
 
 }

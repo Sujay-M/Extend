@@ -95,10 +95,15 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                         sleepTime = (serverTime+clock_skew) - clientTime;
                         try {
                             Thread.sleep(sleepTime);
+                            mMediaPlayer.start();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        mMediaPlayer.start();
+                        catch (IllegalArgumentException e)
+                        {
+                            Toast.makeText(this,"Please caliberate",Toast.LENGTH_LONG);
+                        }
+
                     }
                     break;
                 case "PAUSE":
@@ -109,10 +114,15 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                         sleepTime = (serverTime+clock_skew) - clientTime;
                         try {
                             Thread.sleep(sleepTime);
+                            mMediaPlayer.pause();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        mMediaPlayer.pause();
+                        catch (IllegalArgumentException e)
+                        {
+                            Toast.makeText(this,"Please caliberate",Toast.LENGTH_LONG);
+                        }
+
                     }
                     break;
                 case "STOP":
@@ -132,6 +142,11 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                        catch (IllegalArgumentException e)
+                        {
+                            Toast.makeText(this,"Please caliberate",Toast.LENGTH_LONG);
+                        }
+
                     }
                     break;
 
@@ -149,14 +164,13 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
             switch (dataParts[0])
             {
                 case "CALIB":
-                    switch (dataParts[1])
+                    if(dataParts.length==10)
                     {
-                        case "0":
-                            setTextureView(1,0.0f,0.5f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
-                            break;
-                        case "1":
-                            setTextureView(1,0.5f,1.0f,0.0f,1.0f,0.0f,1.0f,0.157f,0.842f);
-                            break;
+                        int orientation = Integer.parseInt(dataParts[1]);
+                        float[] calibData = new float[8];
+                        for (int i = 2;i<10;i++)
+                            calibData[i-2] = Float.parseFloat(dataParts[i]);
+                        setTextureView(orientation,calibData);
                     }
                     break;
                 case "FILE":
@@ -303,27 +317,26 @@ public class StartClient extends Activity implements Client.CommandFromServer, T
             DEVHEIGHT= dev.devWidth;
         }
         int heightDisp = (int)((y2-y1)*dev.vidHeight);
-        int widthDisp = (int)((x2-x1)*dev.vidWidth);
         int heightScaled = (int)((offsetY2-offsetY1)*DEVHEIGHT);
         int widthScaled = (int)((offsetX2-offsetX1)*DEVWIDTH);
         int h1 = (int)(offsetY1*DEVHEIGHT);
         int h2 = (int)((1.0-offsetY2)*DEVHEIGHT);
         int w1 = (int)(offsetX1*DEVWIDTH);
         int w2 = (int)((1.0-offsetX2)*DEVWIDTH);
+
         Matrix matrix = new Matrix();
 
         float scaleH = (float)dev.vidHeight/(float)heightDisp;
         float scaleW = ((float)heightScaled/(float)heightDisp)/((float)(DEVWIDTH)/(float)dev.vidWidth);
         float scale = (float)heightScaled/(float)heightDisp;
-        float x = -x1*dev.vidWidth*scale+w1;
-        float y = -y1*dev.vidHeight*scale+h1;
-
+        float x = -x1*dev.vidWidth*scale;
+        float y = -y1*dev.vidHeight*scale;
         matrix.setScale(scaleW,scaleH,0,0);
         matrix.postTranslate(x,y);
-
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(widthScaled,heightScaled);
+        layoutParams.setMargins(w1,h1,w2,h2);
         mTextureView.setTransform(matrix);
-        mTextureView.setLayoutParams(new FrameLayout.LayoutParams(DEVWIDTH-w2,DEVHEIGHT-h2));
-
+        mTextureView.setLayoutParams(layoutParams);
     }
 
     private void init()
